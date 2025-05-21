@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Pizza Order System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        header {
+            background-color: #ff6f61;
+            padding: 15px;
+            text-align: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            border-bottom: 2px solid #e94e35;
+        }
+        .container {
+            width: 80%;
+            margin: 30px auto;
+            display: flex;
+            justify-content: space-between;
+            gap: 30px;
+        }
+        .order-form, .cart {
+            width: 48%;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .order-form h2, .cart h3 {
+            color: #ff6f61;
+            margin-bottom: 15px;
+        }
+        .order-form label, .order-form select, .order-form input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .order-form input[type="number"] { width: 40%; }
+        .order-form button {
+            padding: 12px 20px;
+            background-color: #ff6f61;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            margin-right: 10px;
+        }
+        .order-form button:hover { background-color: #e94e35; }
+        .cart ul {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 20px;
+        }
+        .cart li {
+            background-color: #fafafa;
+            padding: 12px;
+            margin-bottom: 12px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .cart button {
+            background-color: #28a745;
+            padding: 12px 20px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .cart button:hover { background-color: #218838; }
+        .order-form .toppings label {
+            display: block;
+            padding: 5px 0;
+            margin-left: 20px;
+            cursor: pointer;
+        }
+        #orderTotal {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 20px;
+            text-align: center;
+            color: #333;
+        }
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .order-form, .cart {
+                width: 90%;
+                margin-bottom: 30px;
+            }
+        }
+
+        .payment-section {
+            display: none; /* Initially hidden */
+            width: 80%;
+            margin: 30px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .payment-options button {
+            padding: 15px 30px;
+            font-size: 18px;
+            margin: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s;
+        }
+
+        .payment-options button:hover {
+            background-color: #45a049;
+        }
+
+        .payment-details {
+            margin-top: 20px;
+        }
+
+        .payment-details input[type="text"],
+        .payment-details input[type="number"] {
+            padding: 10px;
+            margin: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            width: 300px;
+            max-width: 100%;
+        }
+
+        .payment-details button {
+            padding: 12px 25px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s;
+            margin-top: 15px;
+        }
+
+        .payment-details button:hover {
+            background-color: #0056b3;
+        }
+
+        .payment-confirmation {
+            display: none;
+            margin-top: 20px;
+            font-size: 18px;
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    Pizza Order System
+</header>
+
+<div class="container">
+    <div class="order-form">
+        <h2>Place Your Order</h2>
+        <label for="pizzaSelect">Choose Pizza:</label>
+        <select id="pizzaSelect">
+            <option value="Vegetarian Pizza|400">Vegetarian Pizza - RS400</option>
+            <option value="Pepperoni Pizza|500">Pepperoni Pizza - RS500</option>
+            <option value="Margherita Pizza|300">Margherita Pizza - RS300</option>
+            <option value="Mushroom Pizza|550">Mushroom Pizza - RS550</option>
+            <option value="Italian Pizza|440">Italian Pizza - RS440</option>
+        </select>
+
+        <div class="toppings">
+            <label><input type="checkbox" value="Extra Cheese|100"> Extra Cheese (RS100)</label>
+            <label><input type="checkbox" value="Mushrooms|60"> Mushrooms (RS60)</label>
+            <label><input type="checkbox" value="Olives|50"> Olives (RS50)</label>
+        </div>
+
+        <label for="qty">Quantity:</label>
+        <input type="number" id="qty" value="1" min="1">
+
+        <button onclick="addToCart()">Add to Cart</button>
+        <button onclick="undoLastAction()">Undo</button>
+        <button onclick="sortCartByPrice()">Sort by Price</button>
+    </div>
+
+    <div class="cart">
+        <h3>Your Cart</h3>
+        <ul id="cartList"></ul>
+        <p id="orderTotal">Total: RS0.00</p>
+        <button onclick="initiatePayment()">Place Order</button>
+    </div>
+</div>
+
+<div class="payment-section" id="paymentSection">
+    <h2>Payment</h2>
+    <p>Total Amount: <span id="paymentTotal">RS0.00</span></p>
+    <div class="payment-options">
+        <button onclick="showCashPayment()">Cash on Delivery</button>
+        <button onclick="showUpiPayment()">UPI</button>
+        <button onclick="showCardPayment()">Debit/Credit Card</button>
+    </div>
+
+    <div class="payment-details" id="cashPaymentDetails" style="display:none;">
+        <h3>Cash on Delivery</h3>
+        <p>Please have the exact amount ready at the time of delivery.</p>
+        <button onclick="processCashPayment()">Confirm Cash on Delivery</button>
+    </div>
+
+    <div class="payment-details" id="upiPaymentDetails" style="display:none;">
+        <h3>UPI Payment</h3>
+        <input type="text" placeholder="Enter your UPI ID">
+        <button onclick="processUpiPayment()">Pay with UPI</button>
+    </div>
+
+    <div class="payment-details" id="cardPaymentDetails" style="display:none;">
+        <h3>Debit/Credit Card</h3>
+        <input type="number" placeholder="Card Number">
+        <input type="text" placeholder="Expiry Date (MM/YY)">
+        <input type="number" placeholder="CVV">
+        <button onclick="processCardPayment()">Pay with Card</button>
+    </div>
+
+    <div class="payment-confirmation" id="paymentConfirmation">
+        Payment Successful! Your order is being processed.
+    </div>
+</div>
+
+<script>
+    const cart = [];
+    const undoStack = [];
+    let orderTotalAmount = 0; // To store the total amount
+
+    function addToCart() {
+        const pizzaSelect = document.getElementById('pizzaSelect').value.split('|');
+        const pizzaName = pizzaSelect[0];
+        const pizzaPrice = parseFloat(pizzaSelect[1]);
+        const qty = parseInt(document.getElementById('qty').value, 10);
+
+        let toppings = [];
+        let toppingsTotal = 0;
+        document.querySelectorAll('.order-form input[type="checkbox"]:checked').forEach(checkbox => {
+            const topping = checkbox.value.split('|');
+            toppings.push({ name: topping[0], price: parseFloat(topping[1]) });
+            toppingsTotal += parseFloat(topping[1]);
+        });
+
+        const itemTotal = (pizzaPrice + toppingsTotal) * qty;
+        const orderItem = { pizzaName, qty, toppings, itemTotal };
+
+        undoStack.push({ action: 'add', item: orderItem });
+        cart.push(orderItem);
+        updateCartUI();
+    }
+
+    function updateCartUI() {
+        const cartList = document.getElementById('cartList');
+        cartList.innerHTML = '';
+        let total = 0;
+
+        cart.forEach(item => {
+            const toppingsNames = item.toppings.map(t => t.name).join(', ') || 'No toppings';
+            const li = document.createElement('li');
+            li.textContent = `${item.qty}× ${item.pizzaName} (${toppingsNames}) - RS${item.itemTotal.toFixed(2)}`;
+            cartList.appendChild(li);
+            total += item.itemTotal;
+        });
+
+        orderTotalAmount = total; // Update the total amount
+        document.getElementById('orderTotal').textContent = `Total: RS${total.toFixed(2)}`;
+    }
+
+    function undoLastAction() {
+        if (undoStack.length === 0) {
+            alert('No actions to undo');
+            return;
+        }
+
+        const lastAction = undoStack.pop();
+        if (lastAction.action === 'add') {
+            cart.pop();
+        }
+
+        updateCartUI();
+    }
+
+    // ✅ Bubble Sort implementation
+    function sortCartByPrice() {
+        const n = cart.length;
+        for (let i = 0; i < n - 1; i++) {
+            for (let j = 0; j < n - i - 1; j++) {
+                if (cart[j].itemTotal > cart[j + 1].itemTotal) {
+                    // Swap
+                    const temp = cart[j];
+                    cart[j] = cart[j + 1];
+                    cart[j + 1] = temp;
+                }
+            }
+        }
+        updateCartUI();
+    }
+
+    function initiatePayment() {
+        console.log("initiatePayment called"); // Debug: Check if this function is called
+        if (cart.length === 0) {
+            alert('Your cart is empty!');
+            return;
+        }
+
+        document.getElementById('paymentTotal').textContent = `RS${orderTotalAmount.toFixed(2)}`;
+        document.getElementById('paymentSection').style.display = 'block';
+        document.querySelector('.container').style.display = 'none'; // Hide the order form and cart
+    }
+
+    function showCashPayment() {
+        document.getElementById('cashPaymentDetails').style.display = 'block';
+        document.getElementById('upiPaymentDetails').style.display = 'none';
+        document.getElementById('cardPaymentDetails').style.display = 'none';
+    }
+
+    function showUpiPayment() {
+        document.getElementById('cashPaymentDetails').style.display = 'none';
+        document.getElementById('upiPaymentDetails').style.display = 'block';
+        document.getElementById('cardPaymentDetails').style.display = 'none';
+    }
+
+    function showCardPayment() {
+        document.getElementById('cashPaymentDetails').style.display = 'none';
+        document.getElementById('upiPaymentDetails').style.display = 'block';
+        document.getElementById('cardPaymentDetails').style.display = 'none';
+    }
+
+    function processCashPayment() {
+        console.log("processCashPayment called");
+        simulatePaymentSuccess();
+    }
+
+    function processUpiPayment() {
+        const upiId = document.querySelector('#upiPaymentDetails input[type="text"]').value;
+        if (upiId) {
+            alert(`Initiating UPI payment for RS${orderTotalAmount.toFixed(2)} to ${upiId}... (Simulated)`);
+            simulatePaymentSuccess();
+        } else {
+            alert('Please enter your UPI ID.');
+        }
+    }
+
+    function processCardPayment() {
+        const cardNumber = document.querySelector('#cardPaymentDetails input[type="number"]').value;
+        const expiry = document.querySelector('#cardPaymentDetails input[type="text"]').value;
+        const cvv = document.querySelector('#cardPaymentDetails input[type="number"]').value;
+        if (cardNumber && expiry && cvv) {
+            alert(`Processing card payment for RS${orderTotalAmount.toFixed(2)}... (Simulated)`);
+            simulatePaymentSuccess();
+        } else {
+            alert('Please enter valid card details.');
+        }
+    }
+
+    function simulatePaymentSuccess() {
+        console.log("simulatePaymentSuccess called");
+        const paymentSection = document.getElementById('paymentSection');
+        const paymentConfirmation = document.getElementById('paymentConfirmation');
+        const container = document.querySelector('.container');
+
+        paymentSection.style.display = 'none';
+        console.log("paymentSection.style.display set to:", paymentSection.style.display);
+        paymentConfirmation.style.display = 'block';
+        console.log("paymentConfirmation.style.display set to:", paymentConfirmation.style.display);
+        container.style.display = 'flex';
+        console.log("container.style.display set to:", container.style.display);
+
+
+        // Clear the cart after successful (simulated) payment
+        setTimeout(() => {
+            console.log("Timeout started, clearing cart and hiding confirmation");
+            cart.length = 0;
+            updateCartUI();
+            paymentConfirmation.style.display = 'none';
+            console.log("paymentConfirmation.style.display set to:", paymentConfirmation.style.display, "after timeout");
+        }, 100); // Short delay, reduced to 100ms
+    }
+</script>
+</body>
+</html>
